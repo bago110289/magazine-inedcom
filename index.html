@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Magazine INEDCOM</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="description" content="Revista bilingüe de la I.E.D. Comunitaria Metropolitana · Edición 01 · 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1c0609; --bur:#7a0a18; --gold:#d9ab55; --ink:#f8eee2; --mute:#d4bfb3;
+  --bar:rgba(28,6,9,.72); --line:rgba(217,171,85,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Jost,system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+/* watermark background: the page being read, blurred */
+.wm{position:fixed;inset:-60px;background-size:cover;background-position:center;filter:blur(22px) saturate(1.2) brightness(.8);transform:scale(1.08);transition:opacity 1s ease;opacity:0;z-index:0}
+.wm.on{opacity:1}
+.veil{position:fixed;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 45%,rgba(28,6,9,.05),rgba(28,6,9,.6) 80%)}
+
+header{position:fixed;top:0;left:0;right:0;height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:20;background:linear-gradient(to bottom,rgba(20,4,7,.85),rgba(20,4,7,0))}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand h1{margin:0;font-family:"DM Serif Display",serif;font-weight:400;font-size:30px;line-height:1;letter-spacing:.3px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.brand h1 em{color:var(--gold);font-style:italic}
+.brand small{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.right{display:flex;align-items:center;gap:10px}
+.logo{width:58px;height:58px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.9),0 6px 18px rgba(0,0,0,.45);background:#fff;display:block}
+
+button{font:inherit;color:var(--ink);background:var(--bar);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;height:40px;min-width:40px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:border-color .2s,color .2s,transform .15s}
+button:hover{border-color:var(--gold);color:var(--gold)}
+button:active{transform:scale(.95)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+#stage{position:fixed;top:72px;bottom:78px;left:0;right:0;display:flex;align-items:center;justify-content:center;z-index:5;padding:8px 70px}
+#book{margin:0 auto}
+.page{background:#fdf6ea;overflow:hidden}
+.page img{width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.page.hard{background:#7a0a18}
+.stf__parent{filter:drop-shadow(0 22px 34px rgba(0,0,0,.55))}
+
+.nav{position:fixed;top:50%;transform:translateY(-50%);z-index:15;width:50px;height:50px;border-radius:50%}
+.nav:active{transform:translateY(-50%) scale(.95)}
+#prev{left:12px} #next{right:12px}
+.nav svg{width:22px;height:22px}
+
+footer{position:fixed;bottom:0;left:0;right:0;height:78px;display:flex;align-items:center;gap:14px;padding:0 20px;z-index:20;background:linear-gradient(to top,rgba(20,4,7,.88),rgba(20,4,7,0))}
+#range{flex:1;accent-color:var(--gold);height:4px}
+#count{font-variant-numeric:tabular-nums;font-size:14px;color:var(--mute);white-space:nowrap;min-width:90px;text-align:right}
+
+#grid{position:fixed;inset:0;background:rgba(20,4,7,.94);backdrop-filter:blur(10px);overflow:auto;z-index:30;padding:88px 20px 40px;display:none}
+#grid.open{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+#grid h2{font-family:"DM Serif Display",serif;font-weight:400;color:var(--gold);margin:0 0 4px;font-size:30px}
+#grid p{margin:0 0 20px;color:var(--mute);font-size:14px}
+#grid .close{position:fixed;top:16px;right:20px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:16px}
+.thumbs a{display:block;text-align:center;color:var(--mute);font-size:12px;text-decoration:none;transition:transform .2s}
+.thumbs a:hover{transform:translateY(-4px)}
+.thumbs img{width:100%;aspect-ratio:1100/1556;object-fit:cover;border-radius:3px;box-shadow:0 8px 18px rgba(0,0,0,.45);background:#fff;border:2px solid transparent}
+.thumbs a.cur img,.thumbs a:hover img{border-color:var(--gold)}
+
+#zoom{position:fixed;inset:0;background:rgba(10,2,4,.96);z-index:40;display:none;overflow:auto;cursor:zoom-out}
+#zoom.open{display:block;animation:fade .2s ease}
+#zoom img{display:block;width:min(1100px,100%);margin:0 auto;background:#fff}
+#zoom .close{position:fixed;top:14px;right:14px}
+
+.hint{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);font-size:13px;color:var(--ink);background:var(--bar);backdrop-filter:blur(8px);border:1px solid var(--line);padding:8px 16px;border-radius:999px;z-index:16;transition:opacity .6s;text-align:center;max-width:calc(100% - 32px)}
+.loader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:50;background:var(--bg);transition:opacity .5s}
+.loader img{width:110px;height:110px;border-radius:50%;animation:pulse 1.4s ease-in-out infinite}
+.loader span{font-family:"DM Serif Display",serif;font-size:22px;color:var(--gold)}
+@keyframes pulse{50%{transform:scale(1.06)}}
+
+@media (max-width:720px){
+  header{height:62px;padding:0 12px}
+  .brand h1{font-size:23px}
+  .brand small{display:none}
+  .logo{width:44px;height:44px}
+  #stage{top:62px;bottom:70px;padding:6px 6px}
+  .nav{display:none}
+  .lbl{display:none}
+  footer{height:70px;padding:0 12px}
+  #fsBtn{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wm" id="wmA"></div><div class="wm" id="wmB"></div><div class="veil"></div>
+
+<div class="loader" id="loader"><img src="logo.png" alt=""><span>Magazine INEDCOM</span></div>
+
+<header>
+  <div class="brand"><h1>Magazine <em>INEDCOM</em></h1><small>I.E.D. Comunitaria Metropolitana · Edición 01 · 2026</small></div>
+  <div class="right">
+    <button id="gridBtn" aria-label="Ver todas las páginas"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="lbl">Páginas</span></button>
+    <button id="fsBtn" aria-label="Pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <img class="logo" src="logo.png" alt="Escudo de la I.E.D. Comunitaria Metropolitana">
+  </div>
+</header>
+
+<main id="stage"><div id="book"></div></main>
+<button class="nav" id="prev" aria-label="Página anterior"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+<button class="nav" id="next" aria-label="Página siguiente"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+
+<footer>
+  <button id="first" aria-label="Ir a la portada"><svg viewBox="0 0 24 24"><path d="M11 18l-6-6 6-6M19 18l-6-6 6-6"/></svg></button>
+  <input id="range" type="range" min="1" max="119" value="1" aria-label="Ir a la página">
+  <span id="count">1 / 119</span>
+  <button id="zoomBtn" aria-label="Ampliar página"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg><span class="lbl">Ampliar</span></button>
+</footer>
+
+<section id="grid" aria-label="Todas las páginas">
+  <button class="close" id="gclose" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h2>Todas las páginas</h2>
+  <p>Toca una página para abrirla.</p>
+  <div class="thumbs" id="thumbs"></div>
+</section>
+
+<div id="zoom" role="dialog" aria-label="Página ampliada">
+  <button class="close" id="zclose" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <img id="zimg" alt="">
+</div>
+<div class="hint" id="hint">Arrastra la esquina de la hoja, desliza o usa las flechas para pasar las páginas</div>
+
+<script src="js/page-flip.browser.js"></script>
+<script>
+const N = 119, W = 1100, H = 1556;
+const src = n => 'p/' + String(n).padStart(3, '0') + '.jpg';
+const thumb = n => 't/' + String(n).padStart(3, '0') + '.jpg';
+const $ = id => document.getElementById(id);
+const range = $('range'), count = $('count');
+let cur = 0, flip = null;
+
+// build pages (lazy images: only nearby pages get their src)
+const book = $('book');
+const imgs = [];
+for (let i = 0; i < N; i++) {
+  const d = document.createElement('div');
+  d.className = 'page' + (i === 0 || i === N - 1 ? ' hard' : '');
+  if (i === 0 || i === N - 1) d.dataset.density = 'hard';
+  const im = document.createElement('img'); im.alt = 'Página ' + (i + 1); im.decoding = 'async';
+  d.appendChild(im); book.appendChild(d); imgs.push(im);
+}
+function ensure(i){ for (let k = i - 3; k <= i + 4; k++) if (k >= 0 && k < N && !imgs[k].src) imgs[k].src = src(k + 1); }
+ensure(0);
+
+// watermark crossfade
+let wmFront = $('wmA'), wmBack = $('wmB');
+function watermark(n){
+  const url = 'url(' + src(n) + ')';
+  if (wmFront.style.backgroundImage === url) return;
+  wmBack.style.backgroundImage = url;
+  wmBack.classList.add('on'); wmFront.classList.remove('on');
+  [wmFront, wmBack] = [wmBack, wmFront];
+}
+
+function size(){
+  const st = $('stage'), cs = getComputedStyle(st);
+  const aw = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const ah = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const portrait = aw / ah < 1.05;
+  let h = ah, w = h * W / H;
+  const spread = portrait ? w : 2 * w;
+  if (spread > aw) { w = portrait ? aw : aw / 2; h = w * H / W; }
+  return { w: Math.floor(w), h: Math.floor(h), portrait };
+}
+
+function update(i){
+  cur = i; ensure(i);
+  const portrait = flip && flip.getOrientation() === 'portrait';
+  const left = i + 1, pair = (!portrait && i > 0 && i < N - 1) ? (i % 2 ? [i + 1, i + 2] : [i, i + 1]) : [left];
+  count.textContent = (pair.length === 2 ? pair[0] + '–' + pair[1] : pair[0]) + ' / ' + N;
+  range.value = left;
+  watermark(pair[0]);
+  document.querySelectorAll('.thumbs a').forEach(a => a.classList.toggle('cur', pair.includes(+a.dataset.n)));
+  try { history.replaceState(null, '', '#p' + left); } catch (e) {}
+}
+
+function build(start){
+  const s = size();
+  if (flip) { start = flip.getCurrentPageIndex(); flip.destroy(); }
+  // destroy() removes the container; recreate it
+  if (!document.getElementById('book')) {
+    const b = document.createElement('div'); b.id = 'book'; $('stage').appendChild(b);
+    imgs.forEach((im, i) => { const d = document.createElement('div'); d.className = 'page' + (i === 0 || i === N - 1 ? ' hard' : ''); if (i === 0 || i === N - 1) d.dataset.density = 'hard'; d.appendChild(im); b.appendChild(d); });
+  }
+  flip = new St.PageFlip(document.getElementById('book'), {
+    width: s.w, height: s.h, size: 'fixed',
+    showCover: true, usePortrait: true, mobileScrollSupport: false,
+    maxShadowOpacity: 0.55, flippingTime: 850, drawShadow: true, startZIndex: 2,
+    startPage: start || 0
+  });
+  flip.loadFromHTML(document.querySelectorAll('#book .page'));
+  flip.on('flip', e => update(e.data));
+  flip.on('changeState', e => { if (e.data === 'flipping' || e.data === 'user_fold') ensure(flip.getCurrentPageIndex() + 2); });
+  update(flip.getCurrentPageIndex());
+}
+
+function go(n){ n = Math.max(1, Math.min(N, n)); ensure(n - 1); if (Math.abs(n - 1 - cur) <= 2) flip.flip(n - 1); else flip.turnToPage(n - 1); update(n - 1); }
+
+$('next').onclick = () => flip.flipNext();
+$('prev').onclick = () => flip.flipPrev();
+$('first').onclick = () => go(1);
+range.oninput = () => { flip.turnToPage(+range.value - 1); update(+range.value - 1); };
+addEventListener('keydown', e => {
+  if ($('zoom').classList.contains('open')) { if (e.key === 'Escape') closeZoom(); return; }
+  if ($('grid').classList.contains('open')) { if (e.key === 'Escape') $('grid').classList.remove('open'); return; }
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') flip.flipNext();
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') flip.flipPrev();
+  if (e.key === 'Home') go(1);
+  if (e.key === 'End') go(N);
+});
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => build(), 250); });
+
+// grid
+const thumbs = $('thumbs');
+for (let n = 1; n <= N; n++) {
+  const a = document.createElement('a'); a.href = '#p' + n; a.dataset.n = n;
+  a.innerHTML = '<img loading="lazy" alt="Página ' + n + '" src="' + thumb(n) + '"><div>' + n + '</div>';
+  a.onclick = e => { e.preventDefault(); $('grid').classList.remove('open'); go(n); };
+  thumbs.appendChild(a);
+}
+$('gridBtn').onclick = () => $('grid').classList.add('open');
+$('gclose').onclick = () => $('grid').classList.remove('open');
+
+// zoom (current page; in two-page view, the right-hand one unless at cover)
+function openZoom(){ const n = Math.min(N, cur + 1); $('zimg').src = src(n); $('zimg').alt = 'Página ' + n + ' ampliada'; $('zoom').classList.add('open'); $('zoom').scrollTop = 0; }
+function closeZoom(){ $('zoom').classList.remove('open'); }
+$('zoomBtn').onclick = openZoom; $('zoom').onclick = closeZoom;
+$('stage').addEventListener('dblclick', openZoom);
+
+$('fsBtn').onclick = async () => { try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); } catch (e) {} };
+
+function fromHash(){ const m = /^#p(\d+)$/.exec(location.hash); return m ? Math.max(0, Math.min(N - 1, +m[1] - 1)) : 0; }
+addEventListener('hashchange', () => { const i = fromHash(); if (i !== cur) go(i + 1); });
+
+function start(){
+  const i = fromHash(); ensure(i);
+  build(i);
+  const l = $('loader'); setTimeout(() => { l.style.opacity = 0; setTimeout(() => l.remove(), 500); }, 350);
+  setTimeout(() => { const h = $('hint'); if (h) { h.style.opacity = 0; setTimeout(() => h.remove(), 700); } }, 5000);
+}
+if (window.St && St.PageFlip) { const first = imgs[0]; first.complete ? start() : (first.onload = start, setTimeout(() => { if (!flip) start(); }, 2500)); }
+else { $('loader').querySelector('span').textContent = 'No se pudo cargar el visor. Revisa tu conexión.'; }
+</script>
+</body>
+</html>
